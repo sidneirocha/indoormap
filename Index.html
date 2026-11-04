@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#132b24">
+  <title>Mapa Interativo</title>
+  <style>
+    :root{--ink:#1e293b;--muted:#64748b;--line:#e2e8f0;--paper:#fff;--canvas:#edf2f0;--green:#176b4d;--green2:#e8f5ef;--blue:#2f73e0;--shadow:0 12px 34px #10231d16}
+    *{box-sizing:border-box}body{margin:0;color:var(--ink);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#f6f8f7}
+    button,input,textarea,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #83b5ff;outline-offset:2px}
+    .topbar{min-height:64px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 18px;position:sticky;top:0;z-index:20}
+    .brand{font-size:17px;font-weight:800;white-space:nowrap}.brand-mark{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;background:var(--green);color:#fff;margin-right:8px}
+    .top-title{max-width:290px;flex:1;min-width:120px}.top-title input{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-weight:650;color:var(--ink)}
+    .top-actions{display:flex;align-items:center;gap:8px;margin-left:auto}.btn{border:1px solid #d4dde5;border-radius:9px;padding:9px 12px;background:#fff;color:#334155;font-weight:650;white-space:nowrap}.btn:hover{background:#f4f7f6}.btn-primary{background:var(--green);border-color:var(--green);color:#fff}.btn-primary:hover{background:#10573e}.btn-quiet{border-color:transparent;background:transparent;color:var(--muted)}.btn-danger{color:#b42318}.status{color:#16814f;font-size:12px;min-width:50px}.editor-key{width:158px;border:1px solid var(--line);padding:8px 10px;border-radius:8px}
+    .layout{height:calc(100vh - 64px);min-height:580px;display:grid;grid-template-columns:250px minmax(0,1fr) 280px;overflow:hidden}.layout.viewer{grid-template-columns:260px minmax(0,1fr)}.layout.viewer .properties{display:none}.layout.viewer .edit-only{display:none!important}
+    .sidebar,.properties{background:#fff;overflow:auto;padding:16px;border-right:1px solid var(--line)}.properties{border-right:0;border-left:1px solid var(--line)}.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:#52616d;margin:2px 0 10px}.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tool{border:1px solid var(--line);border-radius:10px;background:#f8faf9;min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#384955}.tool span:first-child{font-size:23px}.tool.active{background:#e8f5ef;border-color:#83b99f;color:#135b40;box-shadow:inset 0 0 0 1px #83b99f}.section{margin-bottom:20px}.helper{font-size:12px;color:var(--muted);margin-top:8px}.categories{display:flex;flex-wrap:wrap;gap:6px}.chip{border:1px solid var(--line);border-radius:99px;padding:6px 9px;background:#fff;color:#46545f;font-size:12px}.chip.active{background:var(--green2);border-color:#b1d8c3;color:#14583f}.search{position:relative}.search input{width:100%;padding:10px 12px 10px 34px;border:1px solid var(--line);border-radius:10px}.search:before{content:'⌕';position:absolute;left:12px;top:5px;font-size:21px;color:#718096}.location-list{display:grid;gap:6px;max-height:33vh;overflow:auto;margin-top:10px}.place-row{border:1px solid transparent;background:#fff;padding:8px;border-radius:8px;display:flex;align-items:center;text-align:left;gap:8px;color:var(--ink)}.place-row:hover,.place-row.selected{border-color:#cbd9d1;background:#f4faf6}.place-icon{font-size:18px}.place-name{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.place-category{font-size:11px;color:var(--muted)}
+    .workspace{background:var(--canvas);position:relative;overflow:auto;display:flex;align-items:center;justify-content:center;padding:34px}.map-stage{position:relative;width:min(100%,1100px);aspect-ratio:16/9;background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden;touch-action:pan-x pan-y;flex:none}.map-image{width:100%;height:100%;display:block;object-fit:fill;user-select:none;-webkit-user-drag:none}.map-stage.empty{display:grid;place-items:center;background:#fff;border:2px dashed #b8c9c0;box-shadow:none}.empty-content{text-align:center;padding:24px;max-width:440px}.empty-content strong{font-size:20px;display:block;margin-bottom:8px}.empty-content p{color:var(--muted)}.empty-content .btn{margin-top:8px}.pin-layer{position:absolute;inset:0;pointer-events:none}.pin{position:absolute;transform:translate(-50%,-100%);border:0;border-radius:22px 22px 22px 4px;background:var(--pin,#176b4d);color:white;min-width:34px;height:38px;padding:0 8px;box-shadow:0 4px 12px #0d1c1838;display:flex;align-items:center;justify-content:center;gap:4px;pointer-events:auto;cursor:pointer;transition:transform .12s,filter .12s;touch-action:none}.pin:hover,.pin.selected{transform:translate(-50%,-100%) scale(1.12);filter:brightness(1.08);z-index:5}.pin .pin-icon{font-size:17px}.pin-label{position:absolute;left:calc(100% + 7px);top:50%;transform:translateY(-50%);background:#fff;color:#263238;border:1px solid #d7e0dc;border-radius:6px;padding:3px 6px;font-size:11px;white-space:nowrap;box-shadow:0 2px 7px #172a2417;max-width:150px;overflow:hidden;text-overflow:ellipsis}.workspace-toolbar{position:sticky;bottom:14px;margin:0 14px 12px auto;display:flex;gap:6px;background:#fff;padding:7px;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);width:max-content;z-index:8}.workspace{display:block}.workspace-inner{min-height:100%;display:flex;align-items:center;justify-content:center}.workspace-tools{position:absolute;right:14px;bottom:14px;display:flex;gap:6px;background:#fff;padding:7px;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:8}.icon-btn{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:17px;color:#43515c}.icon-btn:hover{background:#f5f8f6}
+    .field{margin-bottom:13px}.field label{display:block;font-size:12px;font-weight:700;color:#43515c;margin-bottom:5px}.field input,.field textarea,.field select{width:100%;border:1px solid #d7dfe5;border-radius:8px;padding:9px 10px;background:#fff;color:var(--ink)}.field textarea{min-height:82px;resize:vertical}.property-empty{color:var(--muted);text-align:center;padding:28px 8px}.property-actions{display:flex;gap:8px;margin-top:16px}.property-actions .btn{flex:1}.selected-heading{font-size:15px;font-weight:800;margin:3px 0 14px}.image-card{border:1px solid var(--line);border-radius:10px;padding:10px;background:#f8faf9}.image-card .btn{width:100%;margin-top:7px}.footer-note{font-size:11px;color:#718096;margin-top:18px}
+    .modal-backdrop{position:fixed;inset:0;background:#10231d66;z-index:50;display:none;align-items:center;justify-content:center;padding:18px}.modal-backdrop.show{display:flex}.modal{background:#fff;border-radius:16px;padding:22px;width:min(100%,520px);box-shadow:0 25px 80px #001b1260}.modal h2{margin:0 0 6px;font-size:20px}.modal p{color:var(--muted);margin:0 0 16px}.modal textarea{width:100%;height:84px;border:1px solid var(--line);border-radius:8px;padding:9px;resize:vertical;word-break:break-all}.modal-row{display:flex;gap:8px;margin-top:8px}.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#172b24;color:#fff;padding:11px 15px;border-radius:9px;box-shadow:var(--shadow);z-index:70;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}.viewer-detail{position:absolute;left:50%;bottom:76px;transform:translateX(-50%);width:min(calc(100% - 24px),390px);background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;box-shadow:var(--shadow);z-index:10;display:none}.viewer-detail.show{display:block}.viewer-detail h3{margin:0 0 5px}.viewer-detail p{margin:0 0 10px;color:#58666f}.viewer-detail a{color:var(--green);font-weight:700}.readonly-banner{position:absolute;left:14px;top:14px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 10px;box-shadow:var(--shadow);z-index:8;font-weight:700}
+    @media(max-width:1000px){.layout{grid-template-columns:210px minmax(0,1fr) 250px}.layout.viewer{grid-template-columns:210px minmax(0,1fr)}.sidebar,.properties{padding:12px}.brand{font-size:15px}.editor-key{width:135px}}
+    @media(max-width:760px){.topbar{padding:8px 10px;gap:8px;flex-wrap:wrap}.brand{font-size:14px}.brand-mark{width:26px;height:26px}.top-title{order:3;flex-basis:100%;max-width:none}.top-actions{gap:5px}.top-actions .btn{padding:8px;font-size:12px}.status{display:none}.editor-key{width:115px;font-size:12px}.layout,.layout.viewer{height:auto;min-height:calc(100vh - 88px);display:flex;flex-direction:column;overflow:visible}.sidebar{order:2;border-right:0;border-top:1px solid var(--line);overflow:visible}.workspace{order:1;min-height:54vh;padding:52px 10px 62px;overflow:auto}.properties{order:3;border-left:0;border-top:1px solid var(--line);overflow:visible}.layout.viewer .sidebar{order:2}.layout.viewer .workspace{order:1;min-height:67vh}.map-stage{width:100%;border-radius:8px}.tool-grid{grid-template-columns:repeat(4,1fr)}.tool{min-height:58px;font-size:11px}.tool span:first-child{font-size:19px}.location-list{max-height:220px;grid-template-columns:1fr 1fr}.workspace-tools{right:9px;bottom:9px}.readonly-banner{left:8px;top:8px;font-size:12px}.pin-label{display:none}}
+    @media(max-width:450px){.top-actions .optional{display:none}.location-list{grid-template-columns:1fr}.workspace{min-height:48vh}.layout.viewer .workspace{min-height:60vh}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">⌖</span>Mapa Interativo</div>
+    <div class="top-title"><input id="mapName" aria-label="Nome do mapa" value="Mapa do Resort" maxlength="90"></div>
+    <span class="status" id="saveStatus">Rascunho local</span>
+    <input class="editor-key edit-only" id="editorKey" type="password" autocomplete="off" placeholder="Chave do editor" aria-label="Chave do editor">
+    <div class="top-actions">
+      <button class="btn edit-only" id="uploadButton">🖼️ Imagem</button>
+      <button class="btn edit-only optional" id="newMapButton">＋ Novo</button>
+      <button class="btn btn-primary edit-only" id="saveButton">☁️ Salvar</button>
+      <button class="btn" id="shareButton">↗ Compartilhar</button>
+    </div>
+    <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+  </header>
+
+  <main class="layout" id="layout">
+    <aside class="sidebar">
+      <section class="section edit-only">
+        <div class="section-title">Adicionar local</div>
+        <div class="tool-grid" id="toolGrid"></div>
+        <div class="helper">Escolha uma categoria e clique no mapa para posicionar o pin. Arraste os pins para ajustar.</div>
+      </section>
+      <section class="section">
+        <div class="section-title">Buscar locais</div>
+        <div class="search"><input id="searchInput" placeholder="Ex.: piscina, quadra, restaurante" aria-label="Buscar locais"></div>
+        <div class="categories" id="categoryFilters" style="margin-top:9px"></div>
+        <div class="location-list" id="locationList"></div>
+      </section>
+      <section class="section edit-only">
+        <div class="section-title">Imagem do mapa</div>
+        <div class="image-card">
+          <div class="helper" id="imageSummary">Envie uma imagem para começar. O arquivo será armazenado no Google Drive.</div>
+          <button class="btn" id="changeImageButton">Escolher imagem</button>
+        </div>
+      </section>
+      <div class="footer-note">Pins e nomes ficam sobre a imagem. A busca considera nome, categoria e tags.</div>
+    </aside>
+
+    <section class="workspace" id="workspace" aria-label="Área do mapa">
+      <div class="readonly-banner" id="readonlyBanner" hidden>Visualização pública</div>
+      <div class="workspace-inner">
+        <div class="map-stage empty" id="mapStage">
+          <div class="empty-content" id="emptyContent">
+            <strong>Adicione a imagem do seu espaço</strong>
+            <p>Use a planta, ilustração ou mapa do hotel. Depois, coloque pins clicáveis nos ambientes.</p>
+            <button class="btn btn-primary edit-only" id="emptyUploadButton">Selecionar imagem</button>
+          </div>
+          <img class="map-image" id="mapImage" alt="Mapa do espaço" hidden>
+          <div class="pin-layer" id="pinLayer"></div>
+        </div>
+      </div>
+      <div class="workspace-tools edit-only">
+        <button class="icon-btn" id="zoomOut" aria-label="Diminuir zoom">−</button>
+        <button class="icon-btn" id="zoomIn" aria-label="Aumentar zoom">＋</button>
+        <button class="icon-btn" id="fitMap" aria-label="Ajustar mapa">⤢</button>
+      </div>
+      <div class="viewer-detail" id="viewerDetail"></div>
+    </section>
+
+    <aside class="properties edit-only" id="propertiesPanel">
+      <div class="property-empty">Selecione um pin no mapa para editar os detalhes.</div>
+    </aside>
+  </main>
+
+  <div class="modal-backdrop" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <div class="modal">
+      <h2 id="shareTitle">Compartilhar mapa</h2>
+      <p>Qualquer pessoa com o link poderá visualizar e pesquisar os locais publicados.</p>
+      <label class="field"><span style="font-size:12px;font-weight:700">Link público</span><textarea id="publicLink" readonly></textarea></label>
+      <div class="modal-row"><button class="btn btn-primary" id="copyLinkButton">Copiar link</button><button class="btn" id="copyEmbedButton">Copiar código iframe</button><button class="btn btn-quiet" id="closeShareButton">Fechar</button></div>
+      <p class="helper" style="margin-top:14px">Salve o mapa antes de compartilhar para gerar um link permanente.</p>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+  (() => {
+    const CATEGORIES = [
+      {key:'piscina', label:'Piscina', icon:'🏊', color:'#078aa6'},
+      {key:'hospedagem', label:'Hospedagem', icon:'🛏️', color:'#8b5e34'},
+      {key:'alimentacao', label:'Alimentação', icon:'🍽️', color:'#db7b22'},
+      {key:'esportes', label:'Esportes', icon:'🏀', color:'#2563eb'},
+      {key:'lazer', label:'Lazer', icon:'🌿', color:'#21865b'},
+      {key:'servicos', label:'Serviços', icon:'ℹ️', color:'#64748b'},
+      {key:'acesso', label:'Acesso', icon:'🚪', color:'#b83b3b'},
+      {key:'outros', label:'Outros', icon:'📍', color:'#176b4d'}
+    ];
+    const $ = id => document.getElementById(id);
+    const isAppsScript = !!(window.google && google.script && google.script.run);
+    let appUrl = location.href.split('?')[0];
+    let map = {mapId:'',name:'Mapa do Resort',description:'',imageUrl:'',imageWidth:1670,imageHeight:942,locations:[]};
+    let pendingImageDataUrl = '';
+    let pendingImageName = '';
+    let selectedId = '';
+    let activeCategory = '';
+    let activeFilter = '';
+    let isViewer = false;
+    let zoom = 1;
+    let localImageFallback = '';
+    const params = new URLSearchParams(location.search);
+    const initialMapId = params.get('map') || params.get('edit') || '';
+    const initialEdit = params.has('edit');
+    const localStorageKey = 'mapa-interativo-generator-v1';
+
+    function toast(message) {
+      $('toast').textContent = message;
+      $('toast').classList.add('show');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => $('toast').classList.remove('show'), 2800);
+    }
+    function callServer(name, ...args) {
+      return new Promise((resolve, reject) => {
+        if (!isAppsScript) return reject(new Error('Integração com Apps Script indisponível.'));
+        const runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(err => reject(new Error(err.message || String(err))));
+        runner[name](...args);
+      });
+    }
+    function categoryFor(key) { return CATEGORIES.find(c => c.key === key) || CATEGORIES[CATEGORIES.length-1]; }
+    function slug(text) { return (text||'mapa').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,36) || 'mapa'; }
+    function escapeHtml(text) { return String(text||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function setViewerMode(viewer) {
+      isViewer = viewer;
+      $('layout').classList.toggle('viewer', viewer);
+      $('readonlyBanner').hidden = !viewer;
+      $('mapName').readOnly = viewer;
+      $('mapName').style.pointerEvents = viewer ? 'none' : '';
+    }
+    function updateMapName() { map.name = $('mapName').value.trim() || 'Mapa sem título'; }
+    function persistLocal() {
+      if (isAppsScript) return;
+      const copy = {...map, imageDataUrl:map.imageUrl.startsWith('data:') ? map.imageUrl : ''};
+      try { localStorage.setItem(localStorageKey, JSON.stringify(copy)); $('saveStatus').textContent = 'Rascunho local'; }
+      catch(e) { $('saveStatus').textContent = 'Não salvo localmente'; }
+    }
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(localStorageKey);
+        if (raw) { const saved = JSON.parse(raw); map = {...map,...saved,locations:saved.locations||[]}; if (saved.imageDataUrl) map.imageUrl = saved.imageDataUrl; }
+      } catch(e) {}
+    }
+    function renderTools() {
+      $('toolGrid').replaceChildren();
+      CATEGORIES.forEach(cat => {
+        const button = document.createElement('button');
+        button.className = 'tool' + (activeCategory === cat.key ? ' active' : '');
+        button.type = 'button'; button.setAttribute('aria-label','Adicionar '+cat.label);
+        button.innerHTML = '<span>'+cat.icon+'</span><span>'+escapeHtml(cat.label)+'</span>';
+        button.addEventListener('click', () => { activeCategory = activeCategory === cat.key ? '' : cat.key; renderTools(); toast(activeCategory ? 'Clique no mapa para adicionar: '+cat.label : 'Modo de seleção ativo.'); });
+        $('toolGrid').appendChild(button);
+      });
+    }
+    function renderMapImage() {
+      const stage = $('mapStage');
+      if (!map.imageUrl) {
+        stage.classList.add('empty'); $('emptyContent').hidden = false; $('mapImage').hidden = true;
+        $('imageSummary').textContent = 'Envie uma imagem para começar. O arquivo será armazenado no Google Drive.';
+        renderPins(); return;
+      }
+      stage.classList.remove('empty'); $('emptyContent').hidden = true; $('mapImage').hidden = false;
+      $('mapImage').onload = () => {
+        map.imageWidth = $('mapImage').naturalWidth || map.imageWidth;
+        map.imageHeight = $('mapImage').naturalHeight || map.imageHeight;
+        stage.style.aspectRatio = map.imageWidth + ' / ' + map.imageHeight;
+        $('imageSummary').textContent = map.imageWidth+' × '+map.imageHeight+' px · '+(map.imageFileId ? 'armazenada no Drive' : 'imagem local');
+      };
+      $('mapImage').onerror = () => toast('Não foi possível carregar a imagem. Confira se o arquivo do Drive permite visualização por link.');
+      if ($('mapImage').getAttribute('src') !== map.imageUrl) $('mapImage').src = map.imageUrl;
+      renderPins();
+    }
+    function filteredLocations() {
+      const q = $('searchInput').value.trim().toLocaleLowerCase('pt-BR');
+      return map.locations.filter(p => {
+        const matchesQ = !q || [p.name,p.category,p.tags,p.description].join(' ').toLocaleLowerCase('pt-BR').includes(q);
+        const matchesFilter = !activeFilter || p.category === activeFilter;
+        return matchesQ && matchesFilter;
+      });
+    }
+    function renderFilters() {
+      const existing = [...new Set(map.locations.map(p=>p.category).filter(Boolean))];
+      $('categoryFilters').replaceChildren();
+      const all = document.createElement('button'); all.className='chip'+(!activeFilter?' active':''); all.textContent='Todos'; all.addEventListener('click',()=>{activeFilter='';renderAll();}); $('categoryFilters').appendChild(all);
+      existing.forEach(key=>{const c=categoryFor(key);const b=document.createElement('button');b.className='chip'+(activeFilter===key?' active':'');b.textContent=c.icon+' '+c.label;b.addEventListener('click',()=>{activeFilter=activeFilter===key?'':key;renderAll();});$('categoryFilters').appendChild(b);});
+    }
+    function renderPins() {
+      const layer = $('pinLayer'); layer.replaceChildren();
+      const shown = isViewer ? filteredLocations() : map.locations;
+      shown.forEach(p => {
+        const c = categoryFor(p.category);
+        const pin = document.createElement('button');
+        pin.type='button'; pin.className='pin'+(selectedId===p.id?' selected':''); pin.style.left=Number(p.x)+'%'; pin.style.top=Number(p.y)+'%'; pin.style.setProperty('--pin',p.color||c.color); pin.title=p.name||c.label; pin.setAttribute('aria-label',p.name||c.label);
+        pin.innerHTML='<span class="pin-icon">'+escapeHtml(p.icon||c.icon)+'</span>';
+        const label=document.createElement('span');label.className='pin-label';label.textContent=p.name||c.label;pin.appendChild(label);
+        pin.addEventListener('click',e=>{e.stopPropagation();if(isViewer)showViewerDetail(p);else{selectedId=p.id;activeCategory='';renderTools();renderAll();}});
+        if(!isViewer) enablePinDrag(pin,p);
+        layer.appendChild(pin);
+      });
+    }
+    function enablePinDrag(pin, place) {
+      pin.addEventListener('pointerdown', e=>{
+        if(e.button!==0) return; e.preventDefault();e.stopPropagation();
+        const stage=$('mapStage');const rect=stage.getBoundingClientRect();
+        const move=ev=>{const x=(ev.clientX-rect.left)/rect.width*100;const y=(ev.clientY-rect.top)/rect.height*100;place.x=Math.max(0,Math.min(100,x));place.y=Math.max(0,Math.min(100,y));pin.style.left=place.x+'%';pin.style.top=place.y+'%';};
+        const up=()=>{document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);persistLocal();};
+        document.addEventListener('pointermove',move);document.addEventListener('pointerup',up,{once:true});
+      });
+    }
+    function renderLocationList() {
+      const list=$('locationList'); list.replaceChildren();
+      const shown=filteredLocations();
+      if(!shown.length){const empty=document.createElement('div');empty.className='helper';empty.textContent=map.locations.length?'Nenhum local corresponde à busca.':'Os locais adicionados aparecerão aqui.';list.appendChild(empty);return;}
+      shown.forEach(p=>{const c=categoryFor(p.category);const row=document.createElement('button');row.type='button';row.className='place-row'+(p.id===selectedId?' selected':'');row.innerHTML='<span class="place-icon">'+escapeHtml(p.icon||c.icon)+'</span><span style="min-width:0"><span class="place-name">'+escapeHtml(p.name||c.label)+'</span><br><span class="place-category">'+escapeHtml(c.label)+'</span></span>';row.addEventListener('click',()=>{selectedId=p.id;if(isViewer)showViewerDetail(p);else renderAll();});list.appendChild(row);});
+    }
+    function renderProperties() {
+      const panel=$('propertiesPanel'); const p=map.locations.find(x=>x.id===selectedId);
+      if(!p){panel.innerHTML='<div class="property-empty">Selecione um pin no mapa para editar os detalhes.</div>';return;}
+      panel.innerHTML='<div class="selected-heading">Detalhes do local</div><div class="field"><label for="pName">Nome</label><input id="pName" maxlength="120" value="'+escapeHtml(p.name)+'" placeholder="Ex.: Piscina principal"></div><div class="field"><label for="pCategory">Categoria</label><select id="pCategory">'+CATEGORIES.map(c=>'<option value="'+c.key+'" '+(p.category===c.key?'selected':'')+'>'+c.icon+' '+c.label+'</option>').join('')+'</select></div><div class="field"><label for="pTags">Tags de busca</label><input id="pTags" maxlength="500" value="'+escapeHtml(p.tags)+'" placeholder="Ex.: piscina, água, lazer"></div><div class="field"><label for="pDescription">Descrição</label><textarea id="pDescription" maxlength="2000" placeholder="Informações úteis para o visitante">'+escapeHtml(p.description)+'</textarea></div><div class="field"><label for="pLink">Link externo opcional</label><input id="pLink" maxlength="1000" type="url" value="'+escapeHtml(p.link)+'" placeholder="https://"></div><div class="property-actions"><button class="btn btn-danger" id="deletePlace">Excluir pin</button><button class="btn btn-primary" id="donePlace">Concluir</button></div>';
+      const update=(event)=>{p.name=$('pName').value;p.category=$('pCategory').value;p.tags=$('pTags').value;p.description=$('pDescription').value;p.link=$('pLink').value;const c=categoryFor(p.category);p.icon=c.icon;p.color=c.color;if(event&&event.target.id==='pCategory'){renderProperties();}renderPins();renderFilters();renderLocationList();persistLocal();};
+      ['pName','pCategory','pTags','pDescription','pLink'].forEach(id=>$(id).addEventListener(id==='pCategory'?'change':'input',update));
+      $('deletePlace').addEventListener('click',()=>{map.locations=map.locations.filter(x=>x.id!==p.id);selectedId='';renderAll();persistLocal();});
+      $('donePlace').addEventListener('click',()=>{selectedId='';renderAll();persistLocal();});
+    }
+    function renderAll(){ $('mapName').value=map.name||'';renderMapImage();renderFilters();renderLocationList();renderPins();renderProperties(); }
+    function showViewerDetail(p){
+      selectedId=p.id;const c=categoryFor(p.category);const box=$('viewerDetail');
+      box.innerHTML='<h3>'+escapeHtml(p.icon||c.icon)+' '+escapeHtml(p.name||c.label)+'</h3><p>'+escapeHtml(p.description||p.tags||c.label)+'</p>'+(p.link?'<a href="'+escapeHtml(p.link)+'" target="_blank" rel="noopener">Mais informações ↗</a>':'');box.classList.add('show');renderPins();renderLocationList();
+    }
+    function addLocation(x,y){
+      if(!activeCategory||isViewer) return;
+      const c=categoryFor(activeCategory);const p={id:'local-'+Date.now().toString(36),name:'',category:c.key,tags:c.label.toLowerCase(),x,y,icon:c.icon,color:c.color,description:'',link:''};
+      map.locations.push(p);selectedId=p.id;activeCategory='';renderTools();renderAll();persistLocal();setTimeout(()=>{const input=$('pName');if(input){input.focus();input.select();}},30);
+    }
+    function handleStageClick(e){
+      if(isViewer){$('viewerDetail').classList.remove('show');selectedId='';renderPins();return;}
+      if(!activeCategory||!map.imageUrl)return;
+      const rect=$('mapStage').getBoundingClientRect();addLocation((e.clientX-rect.left)/rect.width*100,(e.clientY-rect.top)/rect.height*100);
+    }
+    function compressImage(file){return new Promise((resolve,reject)=>{
+      if(!file||!/^image\/(png|jpeg|webp)$/.test(file.type))return reject(new Error('Selecione uma imagem PNG, JPG ou WebP.'));
+      const reader=new FileReader();reader.onerror=()=>reject(new Error('Não foi possível abrir o arquivo.'));reader.onload=()=>{
+        const img=new Image();img.onerror=()=>reject(new Error('Arquivo de imagem inválido.'));img.onload=()=>{
+          const max=2200,ratio=Math.min(1,max/img.width,max/img.height);const w=Math.round(img.width*ratio),h=Math.round(img.height*ratio);const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);resolve({dataUrl:canvas.toDataURL('image/jpeg',.86),width:w,height:h,name:file.name});
+        };img.src=reader.result;
+      };reader.readAsDataURL(file);
+    });}
+    async function onImageSelected(file){try{const packed=await compressImage(file);pendingImageDataUrl=packed.dataUrl;pendingImageName=packed.name;map.imageUrl=packed.dataUrl;map.imageFileId='';map.imageWidth=packed.width;map.imageHeight=packed.height;renderAll();persistLocal();toast('Imagem pronta. Salve o mapa para enviá-la ao Google Drive.');}catch(e){toast(e.message);}}
+    async function save(){
+      updateMapName();const key=$('editorKey').value.trim();
+      if(isAppsScript&&!key){toast('Informe a chave de edição.');$('editorKey').focus();return;}
+      if(!map.imageUrl){toast('Envie uma imagem antes de salvar.');return;}
+      $('saveStatus').textContent='Salvando…';
+      try{
+        if(isAppsScript){const payload={...map,locations:map.locations,imageDataUrl:pendingImageDataUrl,imageFileName:pendingImageName};const saved=await callServer('saveMap',payload,key);map={...map,...saved};pendingImageDataUrl='';pendingImageName='';$('saveStatus').textContent='Salvo no Google Sheets';toast('Mapa salvo e publicado.');}
+        else{map.mapId=map.mapId||slug(map.name)+'-'+Math.random().toString(36).slice(2,7);persistLocal();$('saveStatus').textContent='Salvo neste navegador';toast('Salvo em modo de demonstração neste navegador.');}
+        history.replaceState({},'',location.pathname+'?edit='+encodeURIComponent(map.mapId));
+      }catch(e){$('saveStatus').textContent='Falha ao salvar';toast(e.message);}
+      renderAll();
+    }
+    async function share(){
+      updateMapName();
+      if(!map.mapId){toast('Salve o mapa antes de compartilhar.');return;}
+      if(isAppsScript){try{appUrl=await callServer('getAppUrl')||appUrl;}catch(e){}}
+      const link=appUrl.split('?')[0]+'?map='+encodeURIComponent(map.mapId);
+      $('publicLink').value=link;$('shareModal').classList.add('show');
+    }
+    async function copyText(text){try{await navigator.clipboard.writeText(text);toast('Copiado para a área de transferência.');}catch(e){const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();toast('Copiado.');}}
+    async function loadPublicMap(id){
+      setViewerMode(true);$('saveStatus').textContent='Carregando…';
+      try{const loaded=await callServer('getPublicMap',id);map={...loaded,locations:loaded.locations||[]};$('saveStatus').textContent='Mapa público';renderAll();}
+      catch(e){$('mapStage').classList.add('empty');$('emptyContent').hidden=false;$('emptyContent').innerHTML='<strong>Mapa indisponível</strong><p>'+escapeHtml(e.message)+'</p>';toast(e.message);}
+    }
+    function applyZoom(delta){zoom=Math.max(.55,Math.min(2.2,zoom+delta));$('mapStage').style.width='min('+(100*zoom)+'%, '+Math.round(1100*zoom)+'px)';}
+    function init(){
+      renderTools();
+      $('mapName').addEventListener('input',()=>{updateMapName();persistLocal();});
+      $('searchInput').addEventListener('input',()=>{renderLocationList();renderPins();});
+      $('mapStage').addEventListener('click',handleStageClick);
+      $('uploadButton').addEventListener('click',()=>$('imageInput').click());$('changeImageButton').addEventListener('click',()=>$('imageInput').click());$('emptyUploadButton').addEventListener('click',()=>$('imageInput').click());
+      $('imageInput').addEventListener('change',e=>{if(e.target.files&&e.target.files[0])onImageSelected(e.target.files[0]);e.target.value='';});
+      $('saveButton').addEventListener('click',save);$('shareButton').addEventListener('click',share);$('newMapButton').addEventListener('click',()=>{if(confirm('Começar um novo mapa? Salve antes se quiser manter as alterações atuais.')){map={mapId:'',name:'Novo mapa',description:'',imageUrl:'',imageWidth:1600,imageHeight:900,locations:[]};pendingImageDataUrl='';selectedId='';$('mapName').value=map.name;history.replaceState({},'',location.pathname);setViewerMode(false);renderAll();}});
+      $('closeShareButton').addEventListener('click',()=>$('shareModal').classList.remove('show'));$('shareModal').addEventListener('click',e=>{if(e.target===$('shareModal'))$('shareModal').classList.remove('show');});
+      $('copyLinkButton').addEventListener('click',()=>copyText($('publicLink').value));$('copyEmbedButton').addEventListener('click',()=>copyText('<iframe src="'+$('publicLink').value+'" width="100%" height="650" style="border:0" loading="lazy" allowfullscreen></iframe>'));
+      $('zoomIn').addEventListener('click',()=>applyZoom(.15));$('zoomOut').addEventListener('click',()=>applyZoom(-.15));$('fitMap').addEventListener('click',()=>{zoom=1;$('mapStage').style.width='min(100%, 1100px)';});
+      $('workspace').addEventListener('dragover',e=>{e.preventDefault();});$('workspace').addEventListener('drop',e=>{e.preventDefault();const file=e.dataTransfer.files&&e.dataTransfer.files[0];if(file)onImageSelected(file);});
+      $('viewerDetail').addEventListener('click',e=>e.stopPropagation());
+      if(initialMapId){
+        if(initialEdit){
+          setViewerMode(false);$('saveStatus').textContent='Carregando mapa…';
+          callServer('getPublicMap',initialMapId).then(loaded=>{map={...loaded,locations:loaded.locations||[]};$('saveStatus').textContent='Mapa carregado para edição';renderAll();})
+            .catch(e=>{toast(e.message);$('saveStatus').textContent='Falha ao carregar';});
+        } else loadPublicMap(initialMapId);
+        return;
+      }
+      setViewerMode(false);
+      if(!isAppsScript){loadLocal();if(!map.imageUrl){localImageFallback='assets/mapa-resort-inicial.png';map.imageUrl=localImageFallback;map.name='Mapa do Resort · Demonstração';map.locations=[
+        {id:'exemplo-piscina',name:'Piscina principal',category:'piscina',tags:'piscina, lazer, água',x:37.5,y:23.5,icon:'🏊',color:'#078aa6',description:'Área de piscina e lazer.'},
+        {id:'exemplo-quadra',name:'Quadra de basquete',category:'esportes',tags:'basquete, quadra, esporte',x:43.5,y:67.5,icon:'🏀',color:'#2563eb',description:'Quadra esportiva.'},
+        {id:'exemplo-campo',name:'Campo de futebol',category:'esportes',tags:'futebol, campo, esporte',x:23,y:80,icon:'⚽',color:'#2563eb',description:'Campo de futebol.'},
+        {id:'exemplo-piscina-lago',name:'Piscina natural',category:'piscina',tags:'piscina, lago, lazer',x:10.5,y:60,icon:'🏊',color:'#078aa6',description:'Piscina de formato natural.'}
+      ];}}
+      renderAll();
+      if(isAppsScript){callServer('getAppUrl').then(url=>{if(url)appUrl=url;}).catch(()=>{});}
+    }
+    init();
+  })();
+  </script>
+</body>
+</html>
