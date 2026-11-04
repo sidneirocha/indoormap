@@ -148,7 +148,8 @@ function saveMap(map, editorKey) {
 }
 
 function getAppUrl() {
-  return ScriptApp.getService().getUrl();
+  const url = String(ScriptApp.getService().getUrl() || '');
+  return url.replace(/\/dev\/?$/, '/exec');
 }
 
 function getLocations_(mapId) {

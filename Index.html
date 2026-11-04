@@ -132,7 +132,8 @@
       location.replace(target.href);
       return;
     }
-    let appUrl = location.href.split('?')[0];
+    function normalizeAppUrl(url) { return String(url || '').replace(/\/dev\/?$/, '/exec'); }
+    let appUrl = normalizeAppUrl(location.href.split('?')[0]);
     let map = {mapId:'',name:'Mapa do Resort',description:'',imageUrl:'',imageWidth:1670,imageHeight:942,locations:[]};
     let pendingImageDataUrl = '';
     let pendingImageName = '';
@@ -342,7 +343,7 @@
     async function share(){
       updateMapName();
       if(!map.mapId){toast('Salve o mapa antes de compartilhar.');return;}
-      if(isAppsScript){try{appUrl=await callServer('getAppUrl')||appUrl;}catch(e){}}
+      if(isAppsScript){try{appUrl=normalizeAppUrl(await callServer('getAppUrl')||appUrl);}catch(e){}}
       const link=appUrl.split('?')[0]+'?map='+encodeURIComponent(map.mapId);
       $('publicLink').value=link;$('shareModal').classList.add('show');
     }
@@ -393,7 +394,7 @@
         {id:'exemplo-piscina-lago',name:'Piscina natural',category:'piscina',tags:'piscina, lago, lazer',x:10.5,y:60,icon:'🏊',color:'#078aa6',description:'Piscina de formato natural.'}
       ];}}
       renderAll();
-      if(isAppsScript){callServer('getAppUrl').then(url=>{if(url)appUrl=url;}).catch(()=>{});}
+      if(isAppsScript){callServer('getAppUrl').then(url=>{if(url)appUrl=normalizeAppUrl(url);}).catch(()=>{});}
     }
     init();
   })();
