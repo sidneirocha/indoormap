@@ -2,12 +2,18 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8">
-    <meta http-equiv="refresh" content="0; url=Index.html">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="refresh" content="0; url=https://script.google.com/macros/s/AKfycbwfOVTBwyh8Wu0m8W35L0PeLOE5dwLjPrD6Oxygv2bY/exec">
     <title>Mapa Interativo</title>
   </head>
   <body>
-    <p>Carregando o <a href="Index.html">Mapa Interativo</a>…</p>
-    <script>location.replace('Index.html' + location.search + location.hash);</script>
+    <p>Abrindo o <a id="appLink" href="https://script.google.com/macros/s/AKfycbwfOVTBwyh8Wu0m8W35L0PeLOE5dwLjPrD6Oxygv2bY/exec">Mapa Interativo</a>…</p>
+    <script>
+      const target = new URL('https://script.google.com/macros/s/AKfycbwfOVTBwyh8Wu0m8W35L0PeLOE5dwLjPrD6Oxygv2bY/exec');
+      target.search = location.search;
+      target.hash = location.hash;
+      document.getElementById('appLink').href = target.href;
+      location.replace(target.href);
+    </script>
   </body>
 </html>

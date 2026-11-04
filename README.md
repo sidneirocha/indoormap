@@ -58,6 +58,8 @@ mapa-interativo-generator/
 
 O visualizador continua público. A chave protege as operações de gravação. Quem tiver a chave poderá editar qualquer mapa desta instância, então compartilhe-a apenas com administradores.
 
+O endereço do GitHub Pages funciona como uma porta de entrada e encaminha para a implantação pública do Apps Script. Para trocar a implantação, atualize a constante `PUBLIC_APP_URL` em `Index.html` e o destino em `index.html`.
+
 ### 4. Publicar como aplicação web
 
 1. No Apps Script, selecione **Implantar → Nova implantação → Aplicativo da Web**.

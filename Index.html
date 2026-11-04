@@ -124,6 +124,14 @@
     ];
     const $ = id => document.getElementById(id);
     const isAppsScript = !!(window.google && google.script && google.script.run);
+    const PUBLIC_APP_URL = 'https://script.google.com/macros/s/AKfycbwfOVTBwyh8Wu0m8W35L0PeLOE5dwLjPrD6Oxygv2bY/exec';
+    if (!isAppsScript && location.hostname === 'sidneirocha.github.io') {
+      const target = new URL(PUBLIC_APP_URL);
+      target.search = location.search;
+      target.hash = location.hash;
+      location.replace(target.href);
+      return;
+    }
     let appUrl = location.href.split('?')[0];
     let map = {mapId:'',name:'Mapa do Resort',description:'',imageUrl:'',imageWidth:1670,imageHeight:942,locations:[]};
     let pendingImageDataUrl = '';
