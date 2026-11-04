@@ -6,7 +6,7 @@ const PROP_DRIVE_FOLDER_ID = 'DRIVE_FOLDER_ID';
 const PROP_EDITOR_KEY = 'EDITOR_KEY';
 
 function doGet() {
-  return HtmlService.createHtmlOutputFromFile('Index')
+  return HtmlService.createHtmlOutputFromFile('index')
     .setTitle('Mapa Interativo')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
