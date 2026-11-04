@@ -100,7 +100,7 @@ O botão **Copiar código iframe** gera um snippet responsivo para incorporar em
 - Imagens de mapas públicos ficam acessíveis a qualquer pessoa com o link, para que sejam exibidas no visualizador.
 - A chave `EDITOR_KEY` é única por implantação: não há usuários ou permissões individuais neste MVP.
 - O Apps Script tem cotas e limites de execução do Google. Este MVP atende protótipos e volumes modestos; monitore as cotas se o uso crescer.
-- O app aceita imagem PNG, JPG ou WebP e reduz a maior dimensão para até 2.200 px antes do upload. O tamanho máximo enviado ao Apps Script é 8 MB após compressão.
+- O app aceita imagem PNG, JPG ou WebP e reduz a maior dimensão para até 5.000 px antes do upload. O tamanho máximo enviado ao Apps Script é 8 MB após compressão.
 - Para múltiplos pisos, autenticação individual, histórico/versionamento ou grande volume de acessos, amplie o modelo antes de uso em produção.
 
 ## Licença
