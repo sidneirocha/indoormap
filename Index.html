@@ -242,8 +242,13 @@
         stage.style.aspectRatio = map.imageWidth + ' / ' + map.imageHeight;
         $('imageSummary').textContent = map.imageWidth+' × '+map.imageHeight+' px · '+(map.imageFileId ? 'armazenada no Drive' : 'imagem local');
       };
-      $('mapImage').onerror = () => toast('Não foi possível carregar a imagem. Confira se o arquivo do Drive permite visualização por link.');
-      if ($('mapImage').getAttribute('src') !== map.imageUrl) $('mapImage').src = map.imageUrl;
+      $('mapImage').onerror = () => {
+        const fallback = map.imageFileId ? 'https://drive.google.com/thumbnail?id='+encodeURIComponent(map.imageFileId)+'&sz=w5000' : '';
+        if (fallback && $('mapImage').src !== fallback) { $('mapImage').src = fallback; return; }
+        toast('Não foi possível carregar a imagem. Verifique se o arquivo do Drive está compartilhado como “qualquer pessoa com o link”.');
+      };
+      const imageSource = map.imageFileId ? 'https://drive.google.com/thumbnail?id='+encodeURIComponent(map.imageFileId)+'&sz=w5000' : map.imageUrl;
+      if ($('mapImage').getAttribute('src') !== imageSource) $('mapImage').src = imageSource;
       renderPins();
     }
     function filteredLocations() {

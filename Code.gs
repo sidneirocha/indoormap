@@ -67,7 +67,7 @@ function getPublicMap(mapId) {
     name: String(row[index.nome] || 'Mapa sem título'),
     description: String(row[index.descricao] || ''),
     imageFileId: String(row[index.imagem_file_id] || ''),
-    imageUrl: String(row[index.imagem_url] || ''),
+    imageUrl: imageUrlForFile_(String(row[index.imagem_file_id] || ''), String(row[index.imagem_url] || '')),
     imageWidth: Number(row[index.largura]) || 1600,
     imageHeight: Number(row[index.altura]) || 900,
     status: String(row[index.status] || 'public')
@@ -188,8 +188,13 @@ function saveImage_(dataUrl, mapId, originalName) {
     mimeType: mimeType,
     width: 0,
     height: 0,
-    url: 'https://drive.google.com/uc?export=view&id=' + file.getId()
+    url: imageUrlForFile_(file.getId(), '')
   };
+}
+
+function imageUrlForFile_(fileId, fallback) {
+  const id = String(fileId || '').trim();
+  return id ? 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w5000' : String(fallback || '');
 }
 
 function appendAsset_(mapId, fileId, type, name, url, mimeType) {
